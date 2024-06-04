@@ -14,6 +14,28 @@ Run the following command to create a `package.json` file with default values:
 
 ```sh
 npm init -y
+```
+
+### Step 2: Install Discord.js
+
+Run the following command to install the discord.js library:
+
+```sh
 npm install discord.js
+```
+
+### Step 3: Install ESLint
+
+Run the following command to install ESLint as a development dependency:
+
+```sh
 npm install --save-dev eslint
+```
+
+### Step 4: Install dotenv
+
+Run the following command to install ESLint as a development dependency:
+
+```sh
+npm install dotenv
 ```
