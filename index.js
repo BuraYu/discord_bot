@@ -8,20 +8,32 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.cooldowns = new Collection();
 client.commands = new Collection();
 const foldersPath = path.join(__dirname, "commands");
-const commandFolders = fs.readdirSync(foldersPath);
+
+let commandFolders = [];
+try {
+  commandFolders = fs.readdirSync(foldersPath);
+} catch (err) {
+  console.error(`Error reading command folders: ${err}`);
+}
 
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder);
-  const commandFiles = fs
-    .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".js"));
+  let commandFiles = [];
+  try {
+    commandFiles = fs
+      .readdirSync(commandsPath)
+      .filter((file) => file.endsWith(".js"));
+  } catch (err) {
+    console.error(`Error reading command files in folder ${folder}: ${err}`);
+  }
+
   for (const file of commandFiles) {
     const filePath = path.join(commandsPath, file);
     const command = require(filePath);
     if ("data" in command && "execute" in command) {
       client.commands.set(command.data.name, command);
     } else {
-      console.log(
+      console.warn(
         `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
       );
     }
@@ -49,8 +61,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   const now = Date.now();
   const timestamps = cooldowns.get(command.data.name);
-  const defaultCooldownDuration = 5;
-  const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 100000;
+  const defaultCooldownDuration = 3;
+  const cooldownAmount = (command.cooldown ?? defaultCooldownDuration) * 1000;
 
   if (timestamps.has(interaction.user.id)) {
     const expirationTime = timestamps.get(interaction.user.id) + cooldownAmount;
