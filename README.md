@@ -34,8 +34,15 @@ npm install --save-dev eslint
 
 ### Step 4: Install dotenv
 
-Run the following command to install ESLint as a development dependency:
+Run the following command to install dotenv as a development dependency:
 
 ```sh
 npm install dotenv
+```
+### Step 5: Install openai
+
+Run the following command to install OpenAI as a development dependency:
+
+```sh
+npm install openai
 ```
