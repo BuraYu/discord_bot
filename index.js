@@ -1,9 +1,18 @@
+require("dotenv/config");
+
 const fs = require("node:fs");
 const path = require("node:path");
 const { Client, Collection, Events, GatewayIntentBits } = require("discord.js");
 const { token } = require("./config.json");
+const { OpenAI } = require("openai");
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
 client.cooldowns = new Collection();
 client.commands = new Collection();
@@ -95,6 +104,46 @@ client.on(Events.InteractionCreate, async (interaction) => {
       });
     }
   }
+});
+
+const IGNORE_PREFIX1 = "!";
+const IGNORE_PREFIX2 = "/";
+const CHANNELS = ["1247520729373741089"];
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_KEY,
+});
+
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+  if (message.content.startsWith(IGNORE_PREFIX1)) return;
+  if (message.content.startsWith(IGNORE_PREFIX2)) return;
+  if (
+    !CHANNELS.includes(message.channelId) &&
+    !message.users.has(client.user.id)
+  )
+    return;
+
+  const response = await openai.chat.completions
+    .create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          // name: '',
+          role: "system",
+          //inital
+          content: "",
+        },
+        {
+          // name: '',
+          role: "user",
+          content: message.content,
+        },
+      ],
+    })
+    .catch((error) => console.error("OpenAI Error: \n", error));
+
+  message.reply(response.choices[0].message.content);
 });
 
 client.login(token);
