@@ -124,6 +124,13 @@ client.on("messageCreate", async (message) => {
   )
     return;
 
+    await sendInterval = setInterval(() => {
+      message.channel.sendTyping();
+    }, 5000) 
+
+    //add: interval
+    //add: if username has a . in it it will crash.
+
   const response = await openai.chat.completions
     .create({
       model: "gpt-3.5-turbo",
@@ -131,7 +138,6 @@ client.on("messageCreate", async (message) => {
         {
           // name: '',
           role: "system",
-          //inital
           content: "",
         },
         {
@@ -142,7 +148,12 @@ client.on("messageCreate", async (message) => {
       ],
     })
     .catch((error) => console.error("OpenAI Error: \n", error));
+  
+    clearInterval(sendInterval);
 
+    if(!response) {
+      message.reply("OpenAI API is not working. Try again in a moment");
+    }
   message.reply(response.choices[0].message.content);
 });
 
