@@ -6,13 +6,13 @@ This repository contains the setup for a Discord bot using Node.js, Discord.js, 
 
 Follow the steps below to initialize the project and install the necessary dependencies.
 
-### Step 1: Initialize the project
+### Step 1: Navigate to the Project Directory and Install dependencies
 
-Run the following command to create a `package.json` file with default values:
+Before running the bot, you need to install the required dependencies. Make sure you have Node.js and npm installed on your system. Then, run the following command to install the dependencies:
+
 
 ```sh
-npm init -y
-```
+npm install```
 
 ### Step 2: Install Discord.js
 
