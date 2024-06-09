@@ -114,47 +114,68 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 });
 
+const userCooldowns = new Map();
+
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (message.content.startsWith(IGNORE_PREFIX1)) return;
   if (message.content.startsWith(IGNORE_PREFIX2)) return;
   if (
     !CHANNELS.includes(message.channelId) &&
-    !message.users.has(client.user.id)
+    !message.mentions.has(client.user.id)
   )
     return;
 
-    await sendInterval = setInterval(() => {
-      message.channel.sendTyping();
-    }, 5000) 
+  const now = Date.now();
+  const cooldownAmount = 20 * 1000; // 20 seconds in milliseconds
+  const lastMessageTimestamp = userCooldowns.get(message.author.id);
 
-    //add: interval
-    //add: if username has a . in it it will crash.
+  if (lastMessageTimestamp && now - lastMessageTimestamp < cooldownAmount) {
+    const timeLeft = (
+      (lastMessageTimestamp + cooldownAmount - now) /
+      1000
+    ).toFixed(1);
+    message.reply(
+      `Please wait ${timeLeft} more seconds before sending another message.`
+    );
+    return;
+  }
 
-  const response = await openai.chat.completions
-    .create({
+  userCooldowns.set(message.author.id, now);
+
+  const sendInterval = setInterval(() => {
+    message.channel.sendTyping();
+  }, 5000);
+
+  try {
+    const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
-          // name: '',
           role: "system",
           content: "",
         },
         {
-          // name: '',
           role: "user",
           content: message.content,
         },
       ],
-    })
-    .catch((error) => console.error("OpenAI Error: \n", error));
-  
+    });
+
     clearInterval(sendInterval);
 
-    if(!response) {
+    if (!response) {
       message.reply("OpenAI API is not working. Try again in a moment");
+      return;
     }
-  message.reply(response.choices[0].message.content);
+    message.reply(response.choices[0].message.content);
+  } catch (error) {
+    clearInterval(sendInterval);
+    console.error("OpenAI Error: \n", error);
+    message.reply(
+      "There was an error while processing your request. Please try again later."
+    );
+  }
 });
 
 client.login(token);
